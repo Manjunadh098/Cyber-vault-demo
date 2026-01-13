@@ -1,0 +1,97 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>Cyber Vault – Demo</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+body {
+  margin: 0;
+  background: #0f212e;
+  color: #ffffff;
+  font-family: Arial, Helvetica, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100vh;
+}
+#card {
+  background: #1a2c38;
+  padding: 24px;
+  border-radius: 16px;
+  width: 360px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  text-align: center;
+}
+button {
+  width: 100%;
+  padding: 14px;
+  margin-top: 16px;
+  font-weight: bold;
+  background: #00e701;
+  color: #012801;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+}
+pre {
+  text-align: left;
+  background: #0f212e;
+  padding: 12px;
+  border-radius: 8px;
+  margin-top: 16px;
+  font-size: 13px;
+}
+</style>
+</head>
+<body>
+
+<div id="card">
+  <h2>Cyber Vault</h2>
+  <p>Board-based Casino Game Demo</p>
+  <button onclick="play()">Initiate Hack</button>
+  <pre id="output">Waiting for input…</pre>
+</div>
+
+<script>
+let nonce = 0;
+
+async function sha256(msg) {
+  const buf = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(msg));
+  return [...new Uint8Array(buf)].map(b => b.toString(16).padStart(2,"0")).join("");
+}
+
+async function play() {
+  nonce++;
+  const seed = "demo-seed:" + nonce;
+  const hash = await sha256(seed);
+
+  const slots = 10;
+  const r1 = parseInt(hash.slice(0,8),16) / 0xffffffff;
+  const r2 = parseInt(hash.slice(8,16),16) / 0xffffffff;
+  const r3 = parseInt(hash.slice(16,24),16) / 0xffffffff;
+
+  const rings = [
+    Math.floor(r1 * slots),
+    Math.floor(r2 * slots),
+    Math.floor(r3 * slots)
+  ];
+
+  let aligned = 0;
+  for (let r of rings) {
+    if (r === 0) aligned++;
+    else break;
+  }
+
+  const payouts = [0, 1.2, 5, 50];
+
+  document.getElementById("output").textContent =
+    "Rings: " + JSON.stringify(rings) +
+    "\nAligned: " + aligned +
+    "\nMultiplier: " + payouts[aligned] + "x";
+}
+</script>
+
+</body>
+</html>
